@@ -21,7 +21,7 @@ Spread-API es una API para obtener los spread de un mercado en buda.com a partir
     - Ejecuta **npm start** para iniciar la aplicación en tu localhost
 
 - Docker
-    - Descarga la imagen disponible en 
+    - Descarga la imagen disponible en https://drive.google.com/file/d/1jtGcKqMUbE7Tsg8v-mZjn_QufWsmM8yt/view?usp=sharing
     - En el directorio donde está la imagen ejecuta **docker load -i spread-api.tar**
     - Ejecuta docker run -p 3000:3000 spread-api
 
