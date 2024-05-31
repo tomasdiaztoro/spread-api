@@ -1,0 +1,218 @@
+openapi: 3.0.0
+info:
+  title: Spread API
+  version: 1.0.0
+  description: API to get spread data from the buda.com API
+servers:
+  - url: http://localhost:3000
+
+paths:
+  /spread:
+    get:
+      summary: Returns the spread for all the existing markets
+      tags: [Spread]
+      responses:
+        '200':
+          description: The list with all the spreads by market
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Spread'
+        '500':
+          description: Failed to get spreads for all markets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Failed to get spreads for all markets
+
+  /spread/{marketId}:
+    get:
+      summary: Returns the spread for a specific market
+      tags: [Spread]
+      parameters:
+        - in: path
+          name: marketId
+          required: true
+          schema:
+            type: string
+            example: btc-clp
+          description: The marketId
+      responses:
+        '200':
+          description: The spread for the specified market
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Spread'
+        '400':
+          description: Bad request, will return a validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              example:
+                error: The marketId must be a string
+        '500':
+          description: Failed to get the spread for the specified market
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Failed to get the spread for btc-slp
+
+  /alert:
+    get:
+      summary: Returns the alert for the specified marketId
+      tags: [Alert]    
+      parameters:
+      - in: query
+        name: marketId
+        required: true
+        schema:
+          type: string
+          example: btc-clp
+        description: The marketId
+      - in: query
+        name: spread
+        required: false
+        schema:
+          type: string
+          example: 2200000
+        description: The reference spread value for polling
+      responses:
+        '200':
+          description: The alert for the specified market
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alert'
+        '400':
+          description: The marketId is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              example:
+                error: btc-slp is not a valid marketId
+        '404':
+          description: The alert was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+              example:
+                error: Alert not found for btc-clp market
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Internal server error
+    post:
+      summary: Creates a new alert
+      tags: [Alert]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Alert'
+            example:
+              marketId: btc-clp
+              value: 2000000
+                
+      responses:
+        '201':
+          description: The alert was created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alert'
+        '400':
+          description: The marketId is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              example:
+                error: btc-slp is not a valid marketId
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Internal server error
+
+components:
+  schemas:
+    Spread:
+      type: object
+      required:
+        - marketId
+        - value
+      properties:
+        marketId:
+          type: string
+          description: The market identifier
+        value:
+          oneOf:
+            - type: number
+              description: The spread value as a number
+            - type: string
+              description: An observation about the book order status if a spread can not be calculated
+      example:
+          marketId: "btc-clp"
+          value: 1002268
+  
+          
+    Alert:
+      type: object
+      required:
+        - marketId
+        - value
+      properties:
+        marketId:
+          type: string
+          description: The marketId
+        value:
+          type: number
+          description: The value to save in the alert
+        createdAt:
+          type: string
+          format: date-time
+          description: The date and time when the alert was created
+      example:
+        marketId: "btc-clp"
+        value: 2000000
+        createdAt: "2024-01-01T00:00:00.000Z"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+
+    ValidationError:
+      type: object
+      properties:
+        error:
+          type: string
+
+    NotFoundError:
+      type: object
+      properties:
+        error:
+          type: string
+
+tags:
+  - name: Spreads
+    description: The difference between the lowest ask and the highest bid in a market

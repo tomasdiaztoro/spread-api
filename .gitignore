@@ -1,0 +1,4 @@
+node_modules/
+spread-api.tar
+dist/
+Dockerfile
